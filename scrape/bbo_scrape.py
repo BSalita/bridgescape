@@ -17,17 +17,23 @@ import requests
 import re
 import json
 import time
+import pathlib
 import os
 import datetime as dt
 from bs4 import BeautifulSoup
 from random import randrange
-
+# import config.py file. Contains json with properties for userid and passwword.
 import config
 
-datadir = '/mnt/data/bridge'
+datadir = 'e:/bridge/data/bbo'
 
 # load the last known timestamp scraped (all times UTC)
-with open('timestamp.dat','r') as f:
+timestamppath = pathlib.Path('timestamp.dat')
+if not timestamppath.exists() or timestamppath.stat().st_size == 0:
+	with open(timestamppath,'w') as f:
+		json.dump(dt.date(1900,1,1).strftime("%Y-%m-%dT%H:%M:%S"), f)
+
+with open(timestamppath,'r') as f:
     raw = json.load(f)
 last = dt.datetime.strptime(raw, "%Y-%m-%dT%H:%M:%S")
 
@@ -44,7 +50,7 @@ while True:
     haven't scraped
     '''
 
-    with open('timestamp.dat','w') as f:
+    with open(timestamppath,'w') as f:
         now = dt.datetime.utcnow()
         json.dump(now.strftime("%Y-%m-%dT%H:%M:%S"), f)
 
@@ -126,7 +132,7 @@ while True:
 
                     linfile = s.get('http://www.bridgebase.com/myhands/' \
                             + link['href'])
-                    with open(filepath, 'w') as f:
+                    with open(filepath, 'w', encoding='utf-8') as f:
                         f.write(linfile.text)
                     print('    | ' + lin)
 
